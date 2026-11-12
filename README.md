@@ -1,4 +1,4 @@
-# Multim-dia-2026-2027
+# Multimédia-2026-2027
 Projeto Multimédia de programação com Inteligência Artificial
 
 Nome do Autor:

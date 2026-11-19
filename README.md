@@ -28,4 +28,4 @@ Listagem simples dos ficheiros presentes na pasta:
 4. README.md - Este relatório de projeto. 
 5. Assets - Imagens, nuvens de palavras geradas, recursos utilizados, etc. 
 5. Reflexão Crítica e Aprendizagem 
-Desenvolve um pequeno texto refletivo sobre o projeto que inclua: O que correu melhor durante o desenvolvimento. Qual foi a maior dificuldade. Como é  
+Desenvolve um pequeno texto refletivo sobre o projeto que inclua: O que correu melhor durante o desenvolvimento. Qual foi a maior dificuldade. Como é? 

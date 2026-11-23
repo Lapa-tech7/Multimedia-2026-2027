@@ -8,6 +8,55 @@ Feito só com **Python (Flask)** e **HTML** (templates Jinja2), com **CSS** pró
 aspeto. **Não usa JavaScript**: todas as páginas são geradas pelo Python e os jogos funcionam
 com formulários HTML (ver [Como funciona sem JavaScript](#como-funciona-sem-javascript)).
 
+## Como experimentar o site
+
+O site corre no teu próprio computador. São precisos uns 5 minutos.
+
+### 1. Descarregar o projeto
+
+1. Nesta página do GitHub, carrega no botão verde **Code** → **Download ZIP**.
+2. Extrai o ZIP (duplo clique no Mac; no Windows, botão direito → *Extrair tudo*).
+
+### 2. Instalar o Python (se ainda não o tiveres)
+
+1. Vai a [python.org/downloads](https://www.python.org/downloads/) e instala a versão mais recente.
+2. **No Windows**, marca a caixa **«Add Python to PATH»** antes de carregar em *Install*.
+
+### 3. Abrir um terminal dentro da pasta do projeto
+
+- **Windows:** abre a pasta no Explorador, clica na barra de endereço, escreve `cmd` e carrega em Enter.
+- **Mac:** no Finder, botão direito na pasta → *Serviços* → *Novo Terminal na Pasta*.
+
+### 4. Instalar o Flask e arrancar o site
+
+| | Windows | Mac |
+|---|---|---|
+| Instalar o Flask (só da primeira vez) | `pip install -r requirements.txt` | `pip3 install -r requirements.txt` |
+| Arrancar o site | `python app.py` | `python3 app.py` |
+
+Quando aparecer `Running on http://127.0.0.1:5050`, o site está ligado.
+**Deixa o terminal aberto** enquanto usas o site.
+
+### 5. Abrir no browser
+
+Abre **[http://127.0.0.1:5050](http://127.0.0.1:5050)** no Chrome, Edge, Firefox ou Safari.
+
+Para desligar o site, carrega em **Ctrl + C** no terminal.
+
+### Se alguma coisa falhar
+
+| Problema | Solução |
+|---|---|
+| `python` não é reconhecido (Windows) | Reinstala o Python com a caixa «Add Python to PATH» marcada, ou usa `py app.py` |
+| `No module named flask` | Repete o passo 4 (no Windows também podes usar `py -m pip install flask`) |
+| `Address already in use` | A porta já está ocupada: fecha o outro terminal ou usa outra porta (ver abaixo) |
+| A página não abre | Confirma que o terminal do passo 4 continua aberto e sem erros |
+
+> Só é preciso o Flask: os gráficos são desenhados em SVG e as animações em CSS.
+> A porta 5050 é usada em vez da 5000 porque no macOS a 5000 está ocupada pelo AirPlay.
+> Para usar outra porta: `PORT=8000 python3 app.py` (Mac) ou `set PORT=8000` e depois
+> `python app.py` (Windows).
+
 ## Páginas
 
 | Endereço | Página |
@@ -45,23 +94,6 @@ Projeto python final/
         ├── quiz.css       # Design do quiz (classes "qz-")
         └── lideres.css    # Design do jogo dos líderes (classes "ld-")
 ```
-
-## Instalar e correr
-
-Abre um terminal **dentro da pasta do projeto** e corre:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt    # (equivale a: pip install flask)
-python app.py
-```
-
-Depois abre **http://127.0.0.1:5050** no browser. Para parar o servidor: `Ctrl + C`.
-
-> Não é preciso `matplotlib` nem `pandas`: os gráficos são desenhados em SVG e as
-> animações em CSS. A porta 5050 é usada em vez da 5000 porque no macOS a 5000 está
-> ocupada pelo AirPlay. Para usar outra porta: `PORT=8000 python app.py`.
 
 ## Como funciona sem JavaScript
 

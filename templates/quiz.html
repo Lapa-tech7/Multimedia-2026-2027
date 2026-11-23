@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block titulo %}Quiz de Geopolítica — {{ nome_site }}{% endblock %}
+
+{% block cabeca %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/quiz.css') }}">
+{% endblock %}
+
+{% block conteudo %}
+{% set letras = ["A", "B", "C", "D"] %}
+<section class="quiz-pagina">
+  <div class="contentor contentor--estreito">
+    <nav class="migalhas" aria-label="Localização">
+      <a href="{{ url_for('inicio') }}">Início</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Quiz de Geopolítica</span>
+    </nav>
+
+    {# Durante um jogo o cabeçalho encolhe, para a pergunta e as opções caberem no ecrã. #}
+    <header class="quiz-pagina__cabecalho{% if estado %} quiz-pagina__cabecalho--jogo{% endif %}">
+      {% if not estado %}<span class="etiqueta etiqueta--quiz">Ferramenta 2 · Quiz de conhecimentos</span>{% endif %}
+      <h1>Quiz de <span class="realce realce--quiz">Geopolítica</span></h1>
+      {% if not estado %}
+      <p class="lead">
+        Testa o que sabes sobre organizações internacionais, a União Europeia, alianças e momentos marcantes da história.
+        São {{ estatisticas.quiz_perguntas }} perguntas em {{ estatisticas.quiz_niveis }} níveis: quanto mais
+        avanças, mais difíceis ficam e mais pontos valem.
+      </p>
+      {% endif %}
+    </header>
+
+    {#  O quiz. O Python (app.py, PARTE 5) decide que ecrã mostrar: início, pergunta
+        (com a correção, depois de responder) ou resultado. Cada botão é um formulário
+        que envia a jogada ao servidor.  #}
+    <section class="qz" id="jogo" aria-label="Quiz de Geopolítica">
+      <div class="qz-topo">
+        <div class="qz-marca">
+          <span class="qz-marca__icone">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3z"/></svg>
+          </span>
+          <span class="qz-marca__nome">Quiz de Geopolítica</span>
+        </div>
+        {% if estado %}
+        {% set ganho = estado.feedback.pontos_ganhos if estado.feedback else 0 %}
+        <p class="qz-pontos{% if ganho %} qz-pontos--subiu{% endif %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></svg>
+          <span class="qz-sr">Pontuação:</span>
+          <span class="qz-pontos__valor">{{ estado.pontuacao }}</span><span class="qz-pontos__unidade">pts</span>
+          {% if ganho %}<span class="qz-pontos__ganho" aria-hidden="true">+{{ ganho }}</span>{% endif %}
+        </p>
+        {% endif %}
+      </div>
+
+      {% if estado %}
+      {# Um segmento por pergunta, agrupados por nível: verde = certa, vermelho = errada. #}
+      <div class="qz-progresso" role="progressbar" aria-label="Progresso do quiz"
+           aria-valuemin="0" aria-valuemax="{{ estado.total }}" aria-valuenow="{{ estado.historico|length }}"
+           aria-valuetext="{{ estado.historico|length }} de {{ estado.total }} perguntas respondidas">
+        {% for grupo in estado.progresso %}
+        <div class="qz-progresso__grupo qz-progresso__grupo--{{ grupo.nivel }}">
+          <div class="qz-progresso__segmentos">
+            {%- for segmento in grupo.segmentos %}<span class="qz-seg{% if segmento %} qz-seg--{{ segmento }}{% endif %}"></span>{% endfor -%}
+          </div>
+          <span class="qz-progresso__nome">{{ grupo.nome }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <div class="qz-ecra-area">
+        {% for categoria, texto in get_flashed_messages(with_categories=true) %}
+        <p class="qz-aviso" role="alert"><span class="qz-aviso__icone" aria-hidden="true">!</span>{{ texto }}</p>
+        {% endfor %}
+
+        {% if not estado %}
+        <!-- ============ ECRÃ 1 · INÍCIO ============ -->
+        <div class="qz-ecra">
+          <div class="qz-inicio">
+            <svg class="qz-globo" viewBox="0 0 160 160" aria-hidden="true">
+              <defs>
+                <linearGradient id="qz-gradiente" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#2dd4bf"/><stop offset="1" stop-color="#0e7490"/>
+                </linearGradient>
+              </defs>
+              <ellipse class="qz-globo__orbita" cx="80" cy="82" rx="74" ry="26"/>
+              <circle cx="80" cy="80" r="50" fill="url(#qz-gradiente)"/>
+              <g class="qz-globo__linhas">
+                <ellipse cx="80" cy="80" rx="22" ry="50"/><ellipse cx="80" cy="80" rx="42" ry="50"/>
+                <path d="M30 80h100M36 55h88M36 105h88"/>
+              </g>
+              <circle class="qz-globo__pino qz-globo__pino--1" cx="58" cy="60" r="6"/>
+              <circle class="qz-globo__pino qz-globo__pino--2" cx="104" cy="70" r="6"/>
+              <circle class="qz-globo__pino qz-globo__pino--3" cx="84" cy="106" r="6"/>
+              <path class="qz-globo__orbita" d="M6 82 A74 26 0 0 0 154 82"/>
+              <circle class="qz-globo__satelite" cx="144" cy="95" r="5"/>
+            </svg>
+            <h2 class="qz-titulo">Quanto sabes sobre o mundo?</h2>
+            <p class="qz-lead">Responde a {{ estatisticas.quiz_perguntas }} perguntas de geopolítica de escolha múltipla.
+              A dificuldade aumenta a cada nível, e as respostas certas valem cada vez mais pontos.</p>
+            <ol class="qz-niveis" aria-label="Níveis do quiz">
+              {% for nivel in niveis_quiz %}
+              <li class="qz-nivel-cartao qz-nivel-cartao--{{ nivel.nivel }}">
+                <span class="qz-nivel-cartao__num">Nível {{ nivel.nivel }}</span>
+                <strong>{{ nivel.nome }}</strong>
+                <span>{{ nivel.pontos }} pts</span>
+              </li>
+              {% endfor %}
+            </ol>
+            <p class="qz-meta">
+              <span>{{ estatisticas.quiz_perguntas }} perguntas</span><span>≈ 4 minutos</span><span>Até {{ estatisticas.quiz_maximo }} pontos</span>
+            </p>
+            <form method="post" action="{{ url_for('quiz_novo') }}">
+              <button class="qz-botao qz-botao--grande" type="submit">Começar o quiz <span aria-hidden="true">→</span></button>
+            </form>
+          </div>
+        </div>
+
+        {% elif estado.tipo == "pergunta" %}
+        <!-- ============ ECRÃ 2 · PERGUNTA (e correção, depois de responder) ============ -->
+        {% set correcao = estado.feedback %}
+        <div class="qz-ecra{% if correcao %} qz-ecra--corrigida{% endif %}">
+          {% if estado.novo_nivel %}
+          <div class="qz-subida qz-subida--{{ estado.nivel }}" role="note">
+            <span class="qz-subida__icone" aria-hidden="true">↑</span>
+            <p><strong>Nível {{ estado.nivel }} · {{ estado.nivel_nome }}</strong>
+              As respostas certas valem agora {{ estado.pontos_pergunta }} pontos.</p>
+          </div>
+          {% endif %}
+
+          <div class="qz-pergunta-meta">
+            <span class="qz-nivel qz-nivel--{{ estado.nivel }}">Nível {{ estado.nivel }} · {{ estado.nivel_nome }}</span>
+            <span class="qz-contador">Pergunta {{ estado.numero }} de {{ estado.total }}</span>
+            <span class="qz-valor">vale {{ estado.pontos_pergunta }} pts</span>
+          </div>
+          <p class="qz-tema">{{ estado.tema }}</p>
+          {# Ao abrir uma pergunta nova, o foco vai para o enunciado (útil com o teclado e leitores de ecrã). #}
+          <h2 class="qz-pergunta" tabindex="-1" {% if not correcao %}autofocus{% endif %}>{{ estado.pergunta }}</h2>
+
+          {# Cada opção é um botão de envio: name="opcao" e value = posição da opção (0 a 3). #}
+          <form method="post" action="{{ url_for('quiz_responder') }}">
+            <input type="hidden" name="pergunta" value="{{ estado.numero - 1 }}">
+            <ol class="qz-opcoes" aria-label="Opções de resposta">
+              {% for texto in estado.opcoes %}
+              {% set i = loop.index0 %}
+              {% if not correcao %}{% set situacao = "" %}
+              {% elif i == correcao.opcao_certa %}{% set situacao = "certa" %}
+              {% elif i == correcao.opcao_escolhida %}{% set situacao = "errada" %}
+              {% else %}{% set situacao = "esbatida" %}{% endif %}
+              <li>
+                <button class="qz-opcao{% if situacao %} qz-opcao--{{ situacao }}{% endif %}" type="submit"
+                        name="opcao" value="{{ i }}" style="--i: {{ i }}" {% if correcao %}disabled{% endif %}>
+                  <span class="qz-opcao__letra" aria-hidden="true">{{ letras[i] }}</span>
+                  <span class="qz-opcao__texto">{{ texto }}</span>
+                  {% if situacao == "certa" %}
+                  <span class="qz-opcao__icone" aria-hidden="true">✓</span><span class="qz-sr">(resposta certa)</span>
+                  {% elif situacao == "errada" %}
+                  <span class="qz-opcao__icone" aria-hidden="true">✕</span><span class="qz-sr">(a tua resposta)</span>
+                  {% endif %}
+                </button>
+              </li>
+              {% endfor %}
+            </ol>
+          </form>
+
+          {% if correcao %}
+          <div class="qz-feedback qz-feedback--{{ 'certo' if correcao.certa else 'errado' }}">
+            <div class="qz-feedback__cabecalho">
+              <span class="qz-feedback__icone" aria-hidden="true">{{ "✓" if correcao.certa else "✕" }}</span>
+              <strong>{{ "Resposta certa!" if correcao.certa else "Resposta errada" }}</strong>
+              {% if correcao.certa %}<span class="qz-feedback__pontos">+{{ correcao.pontos_ganhos }} pts</span>{% endif %}
+            </div>
+            {% if not correcao.certa %}
+            <p class="qz-feedback__certa">A resposta certa é <strong>{{ correcao.resposta_certa }}</strong>.</p>
+            {% endif %}
+            <p class="qz-feedback__explicacao">{{ correcao.explicacao }}</p>
+            <form method="post" action="{{ url_for('quiz_avancar') }}">
+              <input type="hidden" name="pergunta" value="{{ estado.numero - 1 }}">
+              <button class="qz-botao" type="submit" autofocus>
+                {{ "Ver o resultado" if correcao.ultima else "Pergunta seguinte" }} <span aria-hidden="true">→</span>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+
+          <form class="qz-sair" method="post" action="{{ url_for('quiz_sair') }}">
+            <button class="qz-ligacao" type="submit">Sair do quiz</button>
+          </form>
+        </div>
+
+        {% else %}
+        <!-- ============ ECRÃ 3 · RESULTADO ============ -->
+        {# O anel enche até à percentagem de pontos: 326,73 é o perímetro do círculo (2 × π × 52). #}
+        {% set perimetro = 326.73 %}
+        <div class="qz-ecra">
+          <div class="qz-resultado">
+            <div class="qz-anel-caixa">
+              <svg class="qz-anel" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="qz-anel__fundo" cx="60" cy="60" r="52"/>
+                <circle class="qz-anel__valor" cx="60" cy="60" r="52"
+                        style="--alvo: {{ (perimetro * (1 - estado.percentagem / 100))|round(2) }}"/>
+              </svg>
+              <div class="qz-anel__texto"><strong>{{ estado.pontuacao }}</strong><span>de {{ estado.maximo }} pontos</span></div>
+            </div>
+            <p class="qz-resultado__rotulo">A tua classificação</p>
+            <h2 class="qz-titulo" tabindex="-1" autofocus>{{ estado.titulo }}</h2>
+            <p class="qz-lead">{{ estado.mensagem }}</p>
+            <div class="qz-estatisticas">
+              <div><strong>{{ estado.acertos }}/{{ estado.total }}</strong><span>respostas certas</span></div>
+              <div><strong>{{ estado.percentagem }}%</strong><span>dos pontos possíveis</span></div>
+            </div>
+            <ul class="qz-barras" aria-label="Respostas certas por nível">
+              {% for nivel in estado.por_nivel %}
+              <li class="qz-barra qz-barra--{{ nivel.nivel }}">
+                <span class="qz-barra__nome">Nível {{ nivel.nivel }} · {{ nivel.nome }}</span>
+                <span class="qz-barra__pista">
+                  <span class="qz-barra__valor" style="--v: {{ ((nivel.acertos / nivel.total) if nivel.total else 0)|round(3) }}"></span>
+                </span>
+                <span class="qz-barra__num">{{ nivel.acertos }}/{{ nivel.total }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+            <form class="qz-acoes" method="post" action="{{ url_for('quiz_novo') }}">
+              <button class="qz-botao" type="submit">Jogar outra vez <span aria-hidden="true">↻</span></button>
+            </form>
+            <details class="qz-revisao">
+              <summary>Rever as respostas</summary>
+              <ol>
+                {% for item in estado.revisao %}
+                <li class="qz-rev qz-rev--{{ 'certa' if item.certa else 'errada' }}">
+                  <span class="qz-rev__icone" aria-hidden="true">{{ "✓" if item.certa else "✕" }}</span>
+                  <div>
+                    <p class="qz-rev__pergunta"><span>{{ item.numero }}.</span> {{ item.pergunta }}</p>
+                    {% if item.certa %}
+                    <p class="qz-rev__resposta"><strong>{{ item.resposta_certa }}</strong></p>
+                    {% else %}
+                    <p class="qz-rev__resposta">A tua resposta: <s>{{ item.tua_resposta }}</s> · Certa: <strong>{{ item.resposta_certa }}</strong></p>
+                    {% endif %}
+                    <p class="qz-rev__explicacao">{{ item.explicacao }}</p>
+                  </div>
+                </li>
+                {% endfor %}
+              </ol>
+            </details>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</section>
+{% endblock %}

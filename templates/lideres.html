@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block titulo %}Adivinha o Líder — {{ nome_site }}{% endblock %}
+
+{% block cabeca %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/lideres.css') }}">
+{% endblock %}
+
+{% block conteudo %}
+<section class="lideres-pagina">
+  <div class="contentor">
+    <nav class="migalhas" aria-label="Localização">
+      <a href="{{ url_for('inicio') }}">Início</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Adivinha o Líder</span>
+    </nav>
+
+    {# Durante um jogo o cabeçalho encolhe, para as pistas e o palpite caberem no ecrã. #}
+    <header class="lideres-pagina__cabecalho{% if estado %} lideres-pagina__cabecalho--jogo{% endif %}">
+      {% if not estado %}<span class="etiqueta etiqueta--lideres">Ferramenta 3 · Jogo de pistas</span>{% endif %}
+      <h1>Adivinha o <span class="realce realce--lideres">Líder</span></h1>
+      {% if not estado %}
+      <p class="lead">
+        Descobre líderes políticos históricos e atuais de todo o mundo a partir de pistas, das mais enigmáticas
+        às mais fáceis. Quanto menos pistas usares, mais pontos ganhas.
+      </p>
+      {% endif %}
+    </header>
+
+    {#  O jogo. O Python (app.py, PARTE 6) decide que ecrã mostrar: início, ronda ou
+        resultado final. Cada botão é um formulário que envia a jogada ao servidor.  #}
+    <div class="ld" id="jogo">
+      {% for categoria, texto in get_flashed_messages(with_categories=true) %}
+      <p class="ld-aviso" role="alert"><span class="ld-aviso__icone" aria-hidden="true">!</span>{{ texto }}</p>
+      {% endfor %}
+
+      {% if not estado %}
+      <!-- ============ ECRÃ 1 · INÍCIO ============ -->
+      <section class="ld-ecra ld-ecra--entrar ld-inicio ld-cartao" aria-labelledby="ld-titulo-inicio">
+        <div class="ld-inicio__regras">
+          <h2 class="ld-titulo" id="ld-titulo-inicio">Como se joga</h2>
+          <ol class="ld-regras">
+            <li>Cada jogo tem <strong>{{ rondas }} rondas</strong>. Em cada uma há um líder misterioso e
+              <strong>{{ pontos_por_pista|length }} pistas</strong>, da mais difícil à mais fácil.</li>
+            <li>Começas com a primeira pista e <strong>o país do líder</strong>. Podes <strong>pedir outra pista</strong>
+              quando quiseres, mas a ronda passa a valer menos pontos.</li>
+            <li>Não te lembras do nome? Carrega em <strong>«Ver 4 opções»</strong> e escolhe uma: a ronda passa a
+              valer metade.</li>
+            <li>Ao escrever aparecem <strong>sugestões de nomes</strong>, e não precisas de acentos. Um palpite errado
+              desbloqueia a pista seguinte.</li>
+          </ol>
+          <p class="ld-subtitulo">Pontos por ronda</p>
+          <ol class="ld-escada ld-escada--inicio" aria-label="Pontos conforme o número de pistas usadas">
+            {% for pontos in pontos_por_pista %}
+            <li><span>{{ loop.index }} {{ "pista" if loop.first else "pistas" }}</span><b>{{ pontos }}</b></li>
+            {% endfor %}
+          </ol>
+        </div>
+
+        <form class="ld-inicio__opcoes" method="post" action="{{ url_for('lideres_novo') }}">
+          <fieldset class="ld-modos">
+            <legend class="ld-titulo">Escolhe a dificuldade</legend>
+            {% for modo in modos %}
+            <div class="ld-modo ld-modo--{{ modo.valor }}">
+              <input type="radio" id="ld-modo-{{ modo.valor }}" name="dificuldade" value="{{ modo.valor }}"
+                     {% if loop.first %}checked{% endif %}>
+              <label for="ld-modo-{{ modo.valor }}">
+                <strong>{{ modo.nome }}</strong>
+                <span>{{ modo.descricao }}</span>
+              </label>
+            </div>
+            {% endfor %}
+          </fieldset>
+          <button class="ld-botao ld-botao--principal ld-botao--grande" type="submit">
+            Começar jogo <span aria-hidden="true">→</span>
+          </button>
+        </form>
+      </section>
+
+      {% elif estado.tipo == "ronda" %}
+      <!-- ============ ECRÃ 2 · RONDA ============ -->
+      {# "evento" é a jogada anterior (None quando a ronda acabou de começar). #}
+      {% set tipo_evento = evento.tipo if evento else "" %}
+      {% set quase = tipo_evento == "quase" %}
+      <section class="ld-ecra ld-partida{% if not evento %} ld-ecra--entrar{% endif %}" aria-labelledby="ld-titulo-ronda">
+        <div class="ld-partida__principal ld-cartao">
+          <div class="ld-ronda-topo">
+            <span class="ld-chip ld-chip--{{ estado.dificuldade }}">{{ estado.dificuldade_nome }}</span>
+            <span class="ld-ronda-topo__numero">Ronda {{ estado.ronda }} de {{ estado.total_rondas }}</span>
+          </div>
+          <h2 class="ld-titulo" id="ld-titulo-ronda">Quem é este líder?</h2>
+
+          <!-- Dica dada desde o início: o país -->
+          <p class="ld-dica">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+            País: <strong>{{ estado.pais }}</strong>
+          </p>
+
+          <!-- Caixa das pistas: as desbloqueadas com o texto, as outras fechadas -->
+          <ol class="ld-pistas" aria-label="Pistas">
+            {% for pontos in estado.escada %}
+            {% if loop.index <= estado.pistas|length %}
+            {% set nova = tipo_evento in ("pista", "errado_nova_pista") and loop.index == estado.pistas_vistas %}
+            {% set nao_usada = estado.terminada and loop.index > estado.pistas_vistas %}
+            <li class="ld-pista{% if nova %} ld-pista--nova{% endif %}{% if nao_usada %} ld-pista--extra{% endif %}">
+              <span class="ld-pista__num">{{ loop.index }}</span>
+              <p class="ld-pista__texto">{{ estado.pistas[loop.index0] }}</p>
+              <span class="ld-pista__valor">{{ "não usada" if nao_usada else pontos ~ " pts" }}</span>
+            </li>
+            {% else %}
+            <li class="ld-pista ld-pista--fechada">
+              <span class="ld-pista__num" aria-hidden="true">{{ loop.index }}</span>
+              <p class="ld-pista__texto">Pista bloqueada</p>
+              <span class="ld-pista__valor">{{ pontos }} pts</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+          </ol>
+
+          {% if estado.tentativas %}
+          <div class="ld-tentativas">
+            <span class="ld-tentativas__rotulo">Palpites errados:</span>
+            {% for tentativa in estado.tentativas %}<span class="ld-tentativa">{{ tentativa }}</span>{% endfor %}
+          </div>
+          {% endif %}
+
+          {% if not estado.terminada %}
+          {% if estado.opcoes %}
+          <!-- Ajuda «Ver 4 opções»: cada nome é um botão que envia esse nome como palpite -->
+          <form class="ld-opcoes" method="post" action="{{ url_for('lideres_responder') }}" aria-label="Opções de resposta">
+            <input type="hidden" name="passo" value="{{ estado.passo }}">
+            {# O foco vai para a primeira opção que ainda não foi tentada. #}
+            {% set foco = namespace(livre=not quase) %}
+            {% for opcao in estado.opcoes %}
+            <button class="ld-opcao" type="submit" name="resposta" value="{{ opcao.nome }}"
+                    {% if opcao.tentada %}disabled{% elif foco.livre %}autofocus{% set foco.livre = false %}{% endif %}>
+              {{ opcao.nome }}
+            </button>
+            {% endfor %}
+          </form>
+          {% endif %}
+
+          <!-- Palpite e ações: «Submeter» é o botão principal (é o que a tecla Enter usa);
+               os outros botões enviam o mesmo formulário para outro endereço (formaction). -->
+          <form class="ld-palpite{% if tipo_evento == 'errado_nova_pista' %} ld-palpite--errado{% endif %}"
+                method="post" action="{{ url_for('lideres_responder') }}" autocomplete="off">
+            <input type="hidden" name="passo" value="{{ estado.passo }}">
+            <label class="ld-palpite__rotulo" for="ld-resposta">O teu palpite</label>
+            <input class="ld-palpite__campo" id="ld-resposta" name="resposta" type="text" maxlength="80" required
+                   list="ld-nomes" spellcheck="false" autocapitalize="words" placeholder="Escreve o nome do líder…"
+                   {% if quase %}value="{{ evento.palpite }}"{% endif %}
+                   {% if quase or not estado.opcoes %}autofocus{% endif %}>
+            {# Sugestões de nomes enquanto o jogador escreve #}
+            <datalist id="ld-nomes">
+              {% for nome in nomes %}<option value="{{ nome }}"></option>{% endfor %}
+            </datalist>
+            <div class="ld-palpite__acoes">
+              <button class="ld-botao ld-botao--principal" type="submit">Submeter resposta</button>
+              <button class="ld-botao ld-botao--secundario" type="submit" formaction="{{ url_for('lideres_pista') }}"
+                      formnovalidate {% if not estado.custo_pista %}disabled{% endif %}>
+                Pedir pista
+                <span class="ld-custo">{% if estado.custo_pista %}−{{ estado.custo_pista }} pts{% else %}sem mais pistas{% endif %}</span>
+              </button>
+              {% if not estado.opcoes %}
+              <button class="ld-botao ld-botao--secundario" type="submit" formaction="{{ url_for('lideres_opcoes') }}" formnovalidate>
+                Ver 4 opções <span class="ld-custo">−{{ estado.custo_opcoes }} pts</span>
+              </button>
+              {% endif %}
+              <button class="ld-botao ld-botao--texto" type="submit" formaction="{{ url_for('lideres_desistir') }}" formnovalidate>
+                Desistir da ronda
+              </button>
+            </div>
+          </form>
+          {% endif %}
+
+          {% if mensagem %}
+          <p class="ld-mensagem ld-mensagem--{{ mensagem[0] }}" role="status">{{ mensagem[1] }}</p>
+          {% endif %}
+
+          {% if estado.revelacao %}
+          <!-- Revelação do líder no fim da ronda -->
+          {% set lider = estado.revelacao %}
+          <div class="ld-revelacao ld-revelacao--{{ 'certa' if lider.certa else 'falhada' }}">
+            <div class="ld-avatar" aria-hidden="true">
+              {% if lider.imagem %}<img src="{{ lider.imagem }}" alt="">{% else %}<span>{{ lider.iniciais }}</span>{% endif %}
+            </div>
+            <div class="ld-revelacao__info">
+              <p class="ld-revelacao__estado">
+                {% if lider.certa %}Acertaste! +{{ lider.pontos }} pontos{% else %}O líder misterioso era…{% endif %}
+              </p>
+              <h3 class="ld-revelacao__nome">{{ lider.nome }}</h3>
+              <p class="ld-revelacao__cargo">{{ lider.cargo }}</p>
+              <p class="ld-revelacao__meta"><span>{{ lider.pais }}</span><span>{{ lider.epoca }}</span></p>
+            </div>
+            <form method="post" action="{{ url_for('lideres_seguinte') }}">
+              <input type="hidden" name="passo" value="{{ estado.passo }}">
+              <button class="ld-botao ld-botao--principal" type="submit" autofocus>
+                {{ "Ver resultado final" if estado.ultima else "Próxima ronda" }} <span aria-hidden="true">→</span>
+              </button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Painel de pontuação (atualizado a cada jogada) -->
+        <aside class="ld-placar ld-cartao" aria-label="Pontuação">
+          <div class="ld-placar__total{% if tipo_evento == 'certo' %} ld-placar__total--subiu{% endif %}">
+            <span>Pontuação</span>
+            <strong>{{ estado.pontuacao }}</strong>
+            <small>de {{ estado.maximo }} pontos</small>
+          </div>
+          <dl class="ld-placar__dados">
+            <div>
+              <dt>Esta ronda vale</dt>
+              <dd{% if tipo_evento in ("pista", "errado_nova_pista", "opcoes") %} class="ld-valor--desceu"{% endif %}>
+                {{ "—" if estado.terminada else estado.pontos_ronda ~ " pts" }}
+              </dd>
+            </div>
+            <div><dt>Pistas usadas</dt><dd>{{ estado.pistas_vistas }} de {{ estado.total_pistas }}</dd></div>
+            <div><dt>Acertos</dt><dd>{{ estado.acertos }} de {{ estado.total_rondas }}</dd></div>
+          </dl>
+          <ol class="ld-escada" aria-hidden="true">
+            {% for degrau in estado.degraus %}
+            <li{% if degrau.situacao %} class="ld-degrau--{{ degrau.situacao }}"{% endif %}><span>{{ degrau.pista }}.ª pista</span><b>{{ degrau.pontos }}</b></li>
+            {% endfor %}
+          </ol>
+          <p class="ld-subtitulo">Rondas</p>
+          {% set descricao = {"certa": "certa", "falhada": "falhada", "atual": "a decorrer", "": "por jogar"} %}
+          <ol class="ld-rondas" aria-label="Resultado de cada ronda">
+            {% for ronda in estado.mapa_rondas %}
+            <li class="ld-r{% if ronda.situacao %} ld-r--{{ ronda.situacao }}{% endif %}">
+              <span class="ld-sr">Ronda {{ ronda.numero }}: {{ descricao[ronda.situacao] }}{% if ronda.situacao in ("certa", "falhada") %}, {{ ronda.pontos }} pontos{% endif %}</span>
+            </li>
+            {% endfor %}
+          </ol>
+        </aside>
+
+        <form class="ld-sair" method="post" action="{{ url_for('lideres_sair') }}">
+          <button class="ld-botao ld-botao--texto" type="submit">Sair do jogo</button>
+        </form>
+      </section>
+
+      {% else %}
+      <!-- ============ ECRÃ 3 · RESULTADO ============ -->
+      <section class="ld-ecra ld-ecra--entrar ld-final ld-cartao" aria-labelledby="ld-titulo-final">
+        <div class="ld-final__topo">
+          <p class="ld-final__rotulo">Pontuação final</p>
+          <p class="ld-final__pontos"><strong>{{ estado.pontuacao }}</strong> / {{ estado.maximo }}</p>
+          <h2 class="ld-titulo" id="ld-titulo-final" tabindex="-1" autofocus>{{ estado.titulo }}</h2>
+          <p class="ld-final__mensagem">{{ estado.mensagem }}</p>
+        </div>
+        <ol class="ld-final__rondas">
+          {% for ronda in estado.rondas %}
+          <li class="ld-final__ronda ld-final__ronda--{{ 'certa' if ronda.certa else 'falhada' }}">
+            <span class="ld-avatar ld-avatar--pequeno" aria-hidden="true">
+              {% if ronda.imagem %}<img src="{{ ronda.imagem }}" alt="">{% else %}{{ ronda.iniciais }}{% endif %}
+            </span>
+            <span class="ld-final__lider"><strong>{{ ronda.nome }}</strong><span>{{ ronda.pais }} · {{ ronda.dificuldade_nome }}</span></span>
+            <span class="ld-final__ronda-pontos">
+              {{ "+%d pts"|format(ronda.pontos) if ronda.certa else "0 pts" }}
+              <small>
+                {% if ronda.certa %}com {{ ronda.pistas }} {{ "pista" if ronda.pistas == 1 else "pistas" }}{% if ronda.opcoes %} e opções{% endif %}{% else %}não acertada{% endif %}
+              </small>
+            </span>
+          </li>
+          {% endfor %}
+        </ol>
+        <div class="ld-final__acoes">
+          <form method="post" action="{{ url_for('lideres_novo') }}">
+            {# Repete a dificuldade do jogo que acabou. #}
+            <input type="hidden" name="dificuldade" value="{{ estado.modo_valor }}">
+            <button class="ld-botao ld-botao--principal ld-botao--grande" type="submit">
+              Jogar outra vez <span aria-hidden="true">↻</span>
+            </button>
+          </form>
+          <form method="post" action="{{ url_for('lideres_sair') }}">
+            <button class="ld-botao ld-botao--secundario ld-botao--grande" type="submit">Mudar a dificuldade</button>
+          </form>
+        </div>
+      </section>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

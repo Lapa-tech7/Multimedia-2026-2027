@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "_macros.html" import mini_bussola %}
+
+{% block titulo %}Bússola Política — {{ nome_site }}{% endblock %}
+
+{% block conteudo %}
+<!-- ============ HERO DA BÚSSOLA ============ -->
+<section class="hero hero--bussola">
+  <div class="contentor">
+    <nav class="migalhas" aria-label="Localização">
+      <a href="{{ url_for('inicio') }}">Início</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Bússola Política</span>
+    </nav>
+  </div>
+  <div class="contentor hero__grelha">
+    <div class="hero__texto">
+      <span class="etiqueta">Ferramenta 1 · Teste interativo em 3 níveis</span>
+      <h1>Onde te situas na <span class="realce">Bússola Política</span>?</h1>
+      <p class="lead">
+        Responde a afirmações sobre economia e sociedade e descobre a tua posição em dois eixos:
+        <strong>Económico</strong> (Esquerda ↔ Direita) e <strong>Social</strong> (Libertário ↔ Autoritário).
+        No fim, mostramos a personalidade política que mais se aproxima das tuas ideias.
+      </p>
+      <div class="hero__acoes">
+        <a class="botao botao--primario botao--grande" href="#niveis">Escolher nível</a>
+        <a class="botao botao--secundario botao--grande" href="#como-funciona">Como funciona</a>
+      </div>
+      <ul class="hero__numeros">
+        <li><strong>{{ estatisticas.perguntas }}</strong><span>afirmações</span></li>
+        <li><strong>{{ estatisticas.perspetivas }}</strong><span>perspetivas políticas</span></li>
+        <li><strong>{{ estatisticas.paises }}</strong><span>países e regimes</span></li>
+      </ul>
+    </div>
+
+    <div class="hero__visual" aria-hidden="true">
+      {{ mini_bussola("recorte-hero-bussola") }}
+      <div class="hero__chip hero__chip--1"><span>Económico</span><strong>+19</strong></div>
+      <div class="hero__chip hero__chip--2"><span>Social</span><strong>+16</strong></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMO FUNCIONA ============ -->
+<section id="como-funciona" class="seccao">
+  <div class="contentor">
+    <header class="seccao__cabecalho">
+      <span class="etiqueta">Como funciona</span>
+      <h2>Dois eixos, quatro quadrantes</h2>
+      <p>A bússola política descreve as ideias de cada pessoa com duas coordenadas, em vez da habitual linha única entre esquerda e direita.</p>
+    </header>
+
+    <div class="grelha-3">
+      <article class="cartao info">
+        <div class="info__icone info__icone--x">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></svg>
+        </div>
+        <h3>Eixo Económico (X)</h3>
+        <p>O papel do Estado na economia. Valores <strong>negativos</strong> indicam Esquerda (intervenção do Estado, redistribuição); valores <strong>positivos</strong> indicam Direita (mercado livre, menos impostos).</p>
+        <div class="info__eixo"><span>Esquerda</span><span>Direita</span></div>
+      </article>
+
+      <article class="cartao info">
+        <div class="info__icone info__icone--y">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>
+        </div>
+        <h3>Eixo Social (Y)</h3>
+        <p>Autoridade e liberdades individuais. Valores <strong>negativos</strong> indicam o lado Libertário (mais liberdades civis); valores <strong>positivos</strong> indicam o Autoritário (ordem, tradição e autoridade).</p>
+        <div class="info__eixo"><span>Libertário</span><span>Autoritário</span></div>
+      </article>
+
+      <article class="cartao info">
+        <div class="info__icone info__icone--p">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        </div>
+        <h3>Pontuação</h3>
+        <p>Cada resposta vale de −2 a +2. Em algumas afirmações, concordar empurra-te para a Esquerda ou para o lado Libertário: aí o <strong>sinal é invertido</strong> automaticamente.</p>
+        <div class="info__eixo"><span>−2 … +2</span><span>por resposta</span></div>
+      </article>
+    </div>
+
+    <div class="escala" role="list" aria-label="Escala de resposta">
+      {% for opcao in opcoes %}
+      <span class="escala__item escala__item--{{ opcao.classe }}" role="listitem">{{ opcao.texto }} <b>{{ opcao.valor|sinal }}</b></span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============ NÍVEIS ============ -->
+<section id="niveis" class="seccao seccao--alt">
+  <div class="contentor">
+    <header class="seccao__cabecalho">
+      <span class="etiqueta">Começar</span>
+      <h2>Escolhe o nível do teste</h2>
+      <p>Cada nível acrescenta perguntas ao anterior: quanto mais respondes, mais preciso é o resultado.</p>
+    </header>
+
+    <div class="niveis">
+      {% for numero, nivel in niveis.items() %}
+      <article class="nivel nivel--{{ numero }}">
+        {% if numero == 3 %}<span class="nivel__fita">Mais completo</span>{% endif %}
+        <div class="nivel__topo">
+          <span class="nivel__barras" aria-hidden="true">
+            {% for i in range(1, 4) %}<i class="{{ 'ativo' if i <= numero }}"></i>{% endfor %}
+          </span>
+          <span class="nivel__numero">Nível {{ numero }}</span>
+          <span class="nivel__tempo">{{ nivel.tempo }}</span>
+        </div>
+        <h3 class="nivel__nome">{{ nivel.nome }}</h3>
+        <p class="nivel__perguntas"><strong>{{ nivel.perguntas_por_eixo * 2 }}</strong> perguntas</p>
+        <p class="nivel__descricao">{{ nivel.descricao }}</p>
+        <ul class="nivel__lista">
+          {% for destaque in nivel.destaques %}
+          <li{% if numero == 3 and loop.last %} class="nivel__extra"{% endif %}>{{ destaque }}</li>
+          {% endfor %}
+        </ul>
+        <a class="botao botao--primario botao--bloco nivel__botao" href="{{ url_for('teste', nivel=numero) }}">
+          Começar Nível {{ numero }} <span aria-hidden="true">→</span>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

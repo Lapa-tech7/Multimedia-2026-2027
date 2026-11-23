@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block titulo %}Nível {{ nivel }} · {{ info.nome }} — Bússola Política — {{ nome_site }}{% endblock %}
+
+{% block cabeca %}
+{#  Barra de progresso sem JavaScript: cada pergunta tem um segmento na barra, que
+    fica colorido quando essa pergunta tem uma opção escolhida (o seletor :has()
+    do CSS deteta as opções marcadas no formulário).  #}
+<style>
+  {% for pergunta in perguntas -%}
+  .questionario:has(input[name="{{ pergunta.id }}"]:checked) [data-pergunta="{{ pergunta.id }}"]{{ "," if not loop.last }}
+  {% endfor -%}
+  { background-color: transparent; }
+</style>
+{% endblock %}
+
+{% block conteudo %}
+{% set total = perguntas|length %}
+
+<section class="teste-cabecalho">
+  <div class="contentor contentor--estreito">
+    <nav class="migalhas" aria-label="Localização">
+      <a href="{{ url_for('inicio') }}">Início</a><span aria-hidden="true">/</span>
+      <a href="{{ url_for('bussola') }}">Bússola Política</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Nível {{ nivel }}</span>
+    </nav>
+    <span class="etiqueta">Nível {{ nivel }} · {{ total }} perguntas · {{ info.tempo }}</span>
+    <h1>{{ info.nome }}</h1>
+    <p class="lead">Indica o teu grau de concordância com cada afirmação. Não há respostas certas nem erradas: responde de acordo com aquilo que pensas.</p>
+  </div>
+</section>
+
+<form class="contentor contentor--estreito questionario" method="post" action="{{ url_for('teste', nivel=nivel) }}">
+
+  {% if em_falta %}
+  <div class="alerta" role="alert">
+    <strong>Faltam {{ em_falta|length }} {{ 'resposta' if em_falta|length == 1 else 'respostas' }}.</strong>
+    As perguntas por responder estão assinaladas a vermelho.
+  </div>
+  {% endif %}
+
+  {% for pergunta in perguntas %}
+  {% set escolhida = respostas.get(pergunta.id) %}
+  {% set numero = loop.index %}
+  <fieldset id="p-{{ pergunta.id }}" class="pergunta{% if pergunta.id in em_falta %} pergunta--em-falta{% endif %}">
+    <legend class="pergunta__enunciado">
+      <span class="pergunta__meta">
+        <span class="pergunta__numero">Pergunta {{ numero }} de {{ total }}</span>
+        <span class="pergunta__eixo pergunta__eixo--{{ pergunta.eixo }}">{{ 'Economia' if pergunta.eixo == 'x' else 'Sociedade' }}</span>
+        <span class="pergunta__visto" aria-hidden="true">✓</span>
+      </span>
+      <span class="pergunta__texto">{{ pergunta.texto }}</span>
+    </legend>
+
+    <div class="opcoes">
+      {% for opcao in opcoes %}
+      {% set id_opcao = pergunta.id ~ '_' ~ loop.index %}
+      {# "required" num dos botões basta para o browser não deixar enviar o teste com esta pergunta por responder. #}
+      <input class="opcao__input" type="radio" id="{{ id_opcao }}" name="{{ pergunta.id }}" value="{{ opcao.valor }}"
+             {% if escolhida == opcao.valor %}checked{% endif %} {% if loop.first %}required{% endif %}>
+      <label class="opcao opcao--{{ opcao.classe }}" for="{{ id_opcao }}">
+        <span class="opcao__marca" aria-hidden="true"></span>
+        <span class="opcao__texto">{{ opcao.texto }}</span>
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+  {% endfor %}
+
+  <div class="submeter">
+    {# O número de respostas é contado pelo CSS (contador "respostas"). #}
+    <p class="submeter__nota">
+      <span class="submeter__falta">Respondeste a <strong class="contador-respostas"></strong> de {{ total }} perguntas.
+        Responde a todas para veres o resultado.</span>
+      <span class="submeter__pronto">Tudo respondido! Já podes ver o teu resultado.</span>
+    </p>
+    <button class="botao botao--primario botao--grande" type="submit">Ver o meu resultado <span aria-hidden="true">→</span></button>
+  </div>
+
+  {#  Barra de progresso. Fica no fim do formulário para o contador do CSS já ter
+      contado todas as respostas, mas aparece em cima (order: -1 no CSS) e fica
+      presa ao topo do ecrã enquanto se responde.  #}
+  <div class="progresso">
+    <span class="progresso__texto"><strong class="contador-respostas"></strong> de {{ total }} respondidas</span>
+    <div class="progresso__barra" aria-hidden="true">
+      {%- for pergunta in perguntas %}<span class="progresso__seg" data-pergunta="{{ pergunta.id }}"></span>{% endfor -%}
+    </div>
+  </div>
+</form>
+{% endblock %}

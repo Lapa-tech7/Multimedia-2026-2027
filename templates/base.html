@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}{{ nome_site }}{% endblock %}</title>
+  <meta name="description" content="{{ nome_site }}: um projeto desenvolvido por Gonçalo Lapa para ajudar cada pessoa a conhecer as suas ideias, valores e convicções políticas de forma clara, educativa e imparcial.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='16' height='16' fill='%23f28b93'/><rect x='16' width='16' height='16' fill='%238bb8f2'/><rect y='16' width='16' height='16' fill='%2394d6a0'/><rect x='16' y='16' width='16' height='16' fill='%23c3a8ef'/><path d='M8.5 16.5l5 5 10-10' fill='none' stroke='%23151830' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/><path d='M8.5 16.5l5 5 10-10' fill='none' stroke='white' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block cabeca %}{% endblock %}
+</head>
+<body>
+  <a class="saltar" href="#conteudo">Saltar para o conteúdo</a>
+
+  {# Secção ativa no menu: as páginas do teste e do resultado pertencem à Bússola. #}
+  {% set seccao = 'bussola' if request.endpoint in ('bussola', 'teste', 'resultado') else request.endpoint %}
+
+  <header class="topo">
+    <div class="contentor topo__interior">
+      <a class="marca" href="{{ url_for('inicio') }}" aria-label="{{ nome_site }} — página inicial">
+        <svg class="marca__icone" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+          <defs><clipPath id="marca-recorte"><rect width="32" height="32" rx="9"/></clipPath></defs>
+          <g clip-path="url(#marca-recorte)">
+            <rect class="marca__q marca__q--ae" width="16" height="16"/>
+            <rect class="marca__q marca__q--ad" x="16" width="16" height="16"/>
+            <rect class="marca__q marca__q--le" y="16" width="16" height="16"/>
+            <rect class="marca__q marca__q--ld" x="16" y="16" width="16" height="16"/>
+          </g>
+          <path class="marca__visto-contorno" d="M9 16.5l4.6 4.6L23 11.6"/>
+          <path class="marca__visto" d="M9 16.5l4.6 4.6L23 11.6"/>
+        </svg>
+        <span class="marca__nome">Politicamente <span>Correto</span></span>
+      </a>
+
+      {% set ligacoes = [
+        ('inicio', url_for('inicio'), 'Início'),
+        ('bussola', url_for('bussola'), 'Bússola Política'),
+        ('quiz', url_for('quiz'), 'Quiz de Geopolítica'),
+        ('lideres', url_for('lideres'), 'Adivinha o Líder'),
+      ] %}
+
+      {# Menu para ecrãs largos #}
+      <nav class="topo__nav" aria-label="Navegação principal">
+        {% for chave, endereco, texto in ligacoes %}
+        <a class="topo__link{% if seccao == chave %} topo__link--ativo{% endif %}" href="{{ endereco }}"
+           {% if request.endpoint == chave %}aria-current="page"{% endif %}>{{ texto }}</a>
+        {% endfor %}
+        <a class="botao botao--primario botao--pequeno topo__cta" href="{{ url_for('bussola') }}#niveis">Fazer a Bússola</a>
+      </nav>
+
+      {# Menu para telemóvel: abre e fecha sem JavaScript (<details>). Com o menu aberto,
+         um clique fora dele fecha-o (ver .menu[open] no CSS). #}
+      <details class="menu">
+        <summary class="menu__botao">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <span>Menu</span>
+        </summary>
+        <nav class="menu__painel" aria-label="Navegação principal">
+          {% for chave, endereco, texto in ligacoes %}
+          <a class="menu__link{% if seccao == chave %} menu__link--ativo{% endif %}" href="{{ endereco }}"
+             {% if request.endpoint == chave %}aria-current="page"{% endif %}>{{ texto }}</a>
+          {% endfor %}
+        </nav>
+      </details>
+    </div>
+  </header>
+
+  <main id="conteudo">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <footer class="rodape">
+    <div class="contentor rodape__interior">
+      <div class="rodape__marca">
+        <strong>{{ nome_site }}</strong>
+        <p>Um projeto desenvolvido por Gonçalo Lapa para ajudar cada pessoa a conhecer melhor as suas ideias políticas.</p>
+      </div>
+      <nav class="rodape__links" aria-label="Ligações do rodapé">
+        <a href="{{ url_for('inicio') }}#sobre">Sobre o projeto</a>
+        <a href="{{ url_for('bussola') }}">Bússola Política</a>
+        <a href="{{ url_for('quiz') }}">Quiz de Geopolítica</a>
+        <a href="{{ url_for('lideres') }}">Adivinha o Líder</a>
+      </nav>
+      <p class="rodape__nota">Feito só com Python (Flask) e HTML, com CSS para o aspeto · Os resultados são indicativos e têm fins exclusivamente educativos.</p>
+    </div>
+  </footer>
+</body>
+</html>

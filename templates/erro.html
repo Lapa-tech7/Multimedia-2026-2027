@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block titulo %}Página não encontrada — {{ nome_site }}{% endblock %}
+
+{% block conteudo %}
+<section class="seccao erro">
+  <div class="contentor contentor--estreito">
+    <span class="etiqueta">Erro 404</span>
+    <h1>Esta página perdeu o norte.</h1>
+    <p class="lead">O endereço que procuras não existe. Volta ao início para explorares as ferramentas do {{ nome_site }}.</p>
+    <a class="botao botao--primario botao--grande" href="{{ url_for('inicio') }}">Voltar ao início</a>
+  </div>
+</section>
+{% endblock %}

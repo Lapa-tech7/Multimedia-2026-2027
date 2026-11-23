@@ -1,0 +1,46 @@
+{#
+  Componentes reutilizáveis.
+  mini_bussola(id_clip): pequena bússola decorativa (usada na página inicial
+  e na página da Bússola Política). O id_clip tem de ser único na página.
+#}
+{% macro mini_bussola(id_clip, rotulos=true) %}
+<svg class="mini-bussola" viewBox="0 0 360 360" aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id="{{ id_clip }}"><rect x="30" y="30" width="300" height="300" rx="26"/></clipPath>
+  </defs>
+  <g clip-path="url(#{{ id_clip }})">
+    <rect class="q q--ae" x="30" y="30" width="150" height="150"/>
+    <rect class="q q--ad" x="180" y="30" width="150" height="150"/>
+    <rect class="q q--le" x="30" y="180" width="150" height="150"/>
+    <rect class="q q--ld" x="180" y="180" width="150" height="150"/>
+    <g class="bussola__grelha">
+      {% for g in range(60, 330, 30) %}
+      <line x1="{{ g }}" y1="30" x2="{{ g }}" y2="330"/>
+      <line x1="30" y1="{{ g }}" x2="330" y2="{{ g }}"/>
+      {% endfor %}
+    </g>
+  </g>
+  <g class="bussola__eixos">
+    <line x1="180" y1="30" x2="180" y2="330"/>
+    <line x1="30" y1="180" x2="330" y2="180"/>
+  </g>
+  <g class="mini-bussola__refs">
+    <circle cx="78" cy="72" r="5"/>
+    <circle cx="132" cy="128" r="5"/>
+    <circle cx="282" cy="88" r="5"/>
+    <circle cx="112" cy="262" r="5"/>
+    <circle cx="292" cy="290" r="5"/>
+    <circle cx="196" cy="206" r="5"/>
+  </g>
+  <circle class="tu__halo" cx="238" cy="132" r="11"/>
+  <circle class="tu__ponto" cx="238" cy="132" r="10"/>
+  {% if rotulos %}
+  <g class="bussola__rotulos">
+    <text x="180" y="20" text-anchor="middle">AUTORITÁRIO</text>
+    <text x="180" y="352" text-anchor="middle">LIBERTÁRIO</text>
+    <text x="16" y="180" text-anchor="middle" transform="rotate(-90 16 180)">ESQUERDA</text>
+    <text x="344" y="180" text-anchor="middle" transform="rotate(90 344 180)">DIREITA</text>
+  </g>
+  {% endif %}
+</svg>
+{% endmacro %}

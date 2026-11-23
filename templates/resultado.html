@@ -1,0 +1,267 @@
+{% extends "base.html" %}
+
+{% block titulo %}O teu resultado — Bússola Política — {{ nome_site }}{% endblock %}
+
+{% block conteudo %}
+{% set g = grafico %}
+
+<section class="resultado-cabecalho">
+  <div class="contentor">
+    <nav class="migalhas" aria-label="Localização">
+      <a href="{{ url_for('inicio') }}">Início</a><span aria-hidden="true">/</span>
+      <a href="{{ url_for('bussola') }}">Bússola Política</a><span aria-hidden="true">/</span>
+      <span aria-current="page">Resultado</span>
+    </nav>
+    <span class="etiqueta">Resultado · Nível {{ nivel }} · {{ info.nome }}</span>
+    <h1>A tua posição na Bússola Política</h1>
+    <div class="coordenadas">
+      <span class="coordenada"><small>Económico (X)</small><strong>{{ x|sinal }}</strong></span>
+      <span class="coordenada"><small>Social (Y)</small><strong>{{ y|sinal }}</strong></span>
+      <span class="coordenada coordenada--quadrante coordenada--{{ quadrante.classe }}"><small>Quadrante</small><strong>{{ quadrante.nome }}</strong></span>
+      <span class="coordenada coordenada--escala"><small>Escala</small><strong>−{{ limite }} a +{{ limite }}</strong></span>
+    </div>
+  </div>
+</section>
+
+<section class="contentor resultado-grelha">
+  <!-- ============ GRÁFICO ============ -->
+  <article class="cartao grafico">
+    <h2 class="cartao__titulo">Gráfico da bússola</h2>
+    <svg class="bussola" viewBox="0 0 480 480" role="img" aria-labelledby="bussola-titulo bussola-desc">
+      <title id="bussola-titulo">Bússola política com a tua posição</title>
+      <desc id="bussola-desc">O teu ponto está em X = {{ x }} e Y = {{ y }}, numa escala de −{{ limite }} a +{{ limite }}. Zona correspondente: {{ principal.personalidade }}.</desc>
+      <defs>
+        <clipPath id="area-grafico">
+          <rect x="{{ g.inicio }}" y="{{ g.inicio }}" width="{{ g.lado }}" height="{{ g.lado }}" rx="14"/>
+        </clipPath>
+      </defs>
+
+      <g clip-path="url(#area-grafico)">
+        <rect class="q q--ae" x="{{ g.inicio }}" y="{{ g.inicio }}" width="{{ g.metade }}" height="{{ g.metade }}"/>
+        <rect class="q q--ad" x="{{ g.centro }}" y="{{ g.inicio }}" width="{{ g.metade }}" height="{{ g.metade }}"/>
+        <rect class="q q--le" x="{{ g.inicio }}" y="{{ g.centro }}" width="{{ g.metade }}" height="{{ g.metade }}"/>
+        <rect class="q q--ld" x="{{ g.centro }}" y="{{ g.centro }}" width="{{ g.metade }}" height="{{ g.metade }}"/>
+        <g class="bussola__grelha">
+          {% for linha in g.grelha %}
+          <line x1="{{ linha }}" y1="{{ g.inicio }}" x2="{{ linha }}" y2="{{ g.fim }}"/>
+          <line x1="{{ g.inicio }}" y1="{{ linha }}" x2="{{ g.fim }}" y2="{{ linha }}"/>
+          {% endfor %}
+        </g>
+        <rect class="bussola__zona" x="{{ g.zona.x }}" y="{{ g.zona.y }}"
+              width="{{ g.zona.largura }}" height="{{ g.zona.altura }}" rx="4"/>
+      </g>
+
+      <g class="bussola__eixos">
+        <line x1="{{ g.centro }}" y1="{{ g.inicio }}" x2="{{ g.centro }}" y2="{{ g.fim }}"/>
+        <line x1="{{ g.inicio }}" y1="{{ g.centro }}" x2="{{ g.fim }}" y2="{{ g.centro }}"/>
+      </g>
+
+      <g class="bussola__marcas">
+        {% for m in g.marcas %}
+        <text x="{{ m.x }}" y="{{ g.fim + 19 }}" text-anchor="middle">{{ m.valor|sinal }}</text>
+        <text x="{{ g.inicio - 11 }}" y="{{ m.y }}" text-anchor="end">{{ m.valor|sinal }}</text>
+        {% endfor %}
+      </g>
+
+      <g class="bussola__rotulos">
+        <text x="{{ g.centro }}" y="26" text-anchor="middle">AUTORITÁRIO</text>
+        <text x="{{ g.centro }}" y="466" text-anchor="middle">LIBERTÁRIO</text>
+        <text x="22" y="{{ g.centro }}" text-anchor="middle" transform="rotate(-90 22 {{ g.centro }})">ESQUERDA</text>
+        <text x="458" y="{{ g.centro }}" text-anchor="middle" transform="rotate(90 458 {{ g.centro }})">DIREITA</text>
+      </g>
+
+      <g class="bussola__referencias">
+        {% for r in g.referencias %}
+        <circle class="ref{% if r.principal %} ref--principal{% endif %}" cx="{{ r.cx }}" cy="{{ r.cy }}" r="{{ 6 if r.principal else 4 }}">
+          <title>{{ r.titulo }}</title>
+        </circle>
+        {% endfor %}
+      </g>
+
+      <g class="bussola__tu">
+        <circle class="tu__halo" cx="{{ g.tu.x }}" cy="{{ g.tu.y }}" r="11"/>
+        <circle class="tu__ponto" cx="{{ g.tu.x }}" cy="{{ g.tu.y }}" r="9"/>
+        <text class="tu__rotulo" x="{{ g.rotulo.x }}" y="{{ g.rotulo.y }}" text-anchor="{{ g.rotulo.ancora }}">Tu ({{ x|sinal }}, {{ y|sinal }})</text>
+      </g>
+    </svg>
+
+    <ul class="legenda legenda--quadrantes">
+      <li><span class="legenda__simbolo legenda__simbolo--ae"></span>Esquerda Autoritária</li>
+      <li><span class="legenda__simbolo legenda__simbolo--ad"></span>Direita Autoritária</li>
+      <li><span class="legenda__simbolo legenda__simbolo--le"></span>Esquerda Libertária</li>
+      <li><span class="legenda__simbolo legenda__simbolo--ld"></span>Direita Libertária</li>
+    </ul>
+    <ul class="legenda">
+      <li><span class="legenda__simbolo legenda__simbolo--tu"></span>A tua posição</li>
+      <li><span class="legenda__simbolo legenda__simbolo--zona"></span>Zona correspondente</li>
+      <li><span class="legenda__simbolo legenda__simbolo--ref"></span>Figuras de referência (passa o rato por cima)</li>
+    </ul>
+  </article>
+
+  <div class="resultado-coluna">
+    <!-- ============ PERSONALIDADE ============ -->
+    <article class="cartao personalidade personalidade--{{ quadrante.classe }}">
+      <div class="personalidade__topo">
+        <span class="personalidade__rotulo">A tua personalidade política</span>
+        <h2 class="personalidade__nome">{{ principal.personalidade }}</h2>
+        <p class="personalidade__zona">
+          {% if principal.numero %}<span class="personalidade__numero">{{ principal.numero }}</span>{% endif %}
+          <span>{{ principal.posicao }}{% if principal.nome %} · <em>{{ principal.nome }}</em>{% endif %}</span>
+        </p>
+      </div>
+      <div class="personalidade__corpo">
+        <p class="personalidade__descricao">{{ principal.descricao }}</p>
+        <dl class="factos">
+          <div>
+            <dt>Intervalo X</dt>
+            <dd>{{ principal.x[0]|sinal }} a {{ principal.x[1]|sinal }}</dd>
+          </div>
+          <div>
+            <dt>Intervalo Y</dt>
+            <dd>{{ principal.y[0]|sinal }} a {{ principal.y[1]|sinal }}</dd>
+          </div>
+        </dl>
+        {% if principal.dentro %}
+        <p class="selo selo--dentro"><span aria-hidden="true">✓</span> A tua pontuação está dentro do intervalo desta zona.</p>
+        {% else %}
+        <p class="selo selo--perto"><span aria-hidden="true">≈</span> A tua pontuação não cai em nenhum intervalo exato da tabela; esta é a zona mais próxima (a {{ principal.distancia|decimal }} pontos).</p>
+        {% endif %}
+      </div>
+    </article>
+
+    <!-- ============ EIXOS ============ -->
+    <article class="cartao eixos">
+      <h2 class="cartao__titulo">Os teus eixos</h2>
+      {% for rotulo, valor, extremo_neg, extremo_pos in [('Económico (X)', x, 'Esquerda', 'Direita'), ('Social (Y)', y, 'Libertário', 'Autoritário')] %}
+      {% set pos = valor|percentagem(limite) %}
+      <div class="eixo">
+        <div class="eixo__cabecalho"><span>{{ rotulo }}</span><strong>{{ valor|sinal }}</strong></div>
+        <div class="eixo__barra">
+          <span class="eixo__preenchimento" style="left: {{ [pos, 50]|min }}%; width: {{ ((pos - 50)|abs)|round(2) }}%"></span>
+          <span class="eixo__marcador" style="left: {{ pos }}%"></span>
+        </div>
+        <div class="eixo__extremos"><span>{{ extremo_neg }}</span><span>Centro</span><span>{{ extremo_pos }}</span></div>
+      </div>
+      {% endfor %}
+    </article>
+  </div>
+</section>
+
+{% if pais %}
+<!-- ============ NÍVEL 3: PAÍS / REGIME ============ -->
+<section class="contentor">
+  <article class="pais">
+    <div class="pais__icone" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3z"/></svg>
+    </div>
+    <div class="pais__conteudo">
+      <span class="pais__rotulo">Versão Completa · País atual ou regime histórico mais semelhante</span>
+      <h2 class="pais__nome">{{ pais.pais }}</h2>
+      <dl class="pais__factos">
+        <div><dt>Ideologia / corrente</dt><dd>{{ pais.ideologia }}</dd></div>
+        <div><dt>Período / contexto</dt><dd>{{ pais.periodo }}</dd></div>
+        <div class="pais__facto-largo"><dt>Características principais</dt><dd>{{ pais.caracteristicas }}</dd></div>
+      </dl>
+      <p class="pais__porque">
+        <strong>Porquê este país?</strong> A tua perspetiva política — n.º {{ principal.numero }}, <em>{{ principal.nome }}</em> —
+        pertence à família ideológica «{{ pais.ideologia }}».
+      </p>
+      {% if outros_paises %}
+      <div class="pais__outros">
+        <span>Também próximos das tuas ideias:</span>
+        {% for outro in outros_paises %}
+        <span class="chip" title="{{ outro.ideologia }} · {{ outro.periodo }}">{{ outro.pais }}</span>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </article>
+</section>
+{% else %}
+<section class="contentor">
+  <aside class="convite">
+    <div>
+      <h2>Que país ou regime histórico mais se parece contigo?</h2>
+      <p>Essa correspondência está disponível na Versão Completa (Nível 3), com {{ estatisticas.perguntas }} perguntas e {{ estatisticas.perspetivas }} perspetivas políticas.</p>
+    </div>
+    <a class="botao botao--claro" href="{{ url_for('teste', nivel=3) }}">Fazer a Versão Completa <span aria-hidden="true">→</span></a>
+  </aside>
+</section>
+{% endif %}
+
+<!-- ============ OUTRAS CORRESPONDÊNCIAS ============ -->
+<section class="contentor">
+  <h2 class="titulo-seccao">Outras correspondências próximas</h2>
+  <div class="alternativas">
+    {% for zona in alternativas %}
+    <article class="cartao alternativa">
+      <span class="alternativa__posicao">{{ loop.index + 1 }}.º</span>
+      <h3>{{ zona.personalidade }}</h3>
+      <p class="alternativa__zona">{{ zona.posicao }}{% if zona.nome %} · {{ zona.nome }}{% endif %}</p>
+      <p class="alternativa__distancia">
+        {% if zona.dentro %}Também dentro deste intervalo{% else %}A {{ zona.distancia|decimal }} pontos do intervalo{% endif %}
+      </p>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ============ DETALHE DO CÁLCULO ============ -->
+<section class="contentor">
+  <details class="cartao detalhe">
+    <summary>Ver o detalhe das respostas e do cálculo</summary>
+    <p class="detalhe__explicacao">
+      Contributo = resposta × direção. Quando concordar com a afirmação empurra para a Esquerda (X) ou para o lado
+      Libertário (Y), a direção é −1 e o sinal da resposta é invertido.
+    </p>
+    <div class="tabela-contentor">
+      <table class="tabela">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Afirmação</th>
+            <th scope="col">Eixo</th>
+            <th scope="col">A tua resposta</th>
+            <th scope="col">Concordar leva a…</th>
+            <th scope="col">Contributo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for linha in detalhe %}
+          {% set p = linha.pergunta %}
+          <tr>
+            <td>{{ linha.numero }}</td>
+            <td class="tabela__texto">{{ p.texto }}</td>
+            <td>{{ 'X' if p.eixo == 'x' else 'Y' }}</td>
+            <td>{{ linha.resposta_texto }} ({{ linha.resposta|sinal }})</td>
+            <td>
+              {% if p.eixo == 'x' %}{{ 'Direita' if p.direcao > 0 else 'Esquerda' }}{% else %}{{ 'Autoritário' if p.direcao > 0 else 'Libertário' }}{% endif %}
+              {% if p.direcao < 0 %}<span class="invertido">sinal invertido</span>{% endif %}
+            </td>
+            <td class="tabela__contributo {{ 'positivo' if linha.contributo > 0 else 'negativo' }}">{{ linha.contributo|sinal }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        <tfoot>
+          <tr><th scope="row" colspan="5">Total do eixo Económico (X)</th><td>{{ x|sinal }}</td></tr>
+          <tr><th scope="row" colspan="5">Total do eixo Social (Y)</th><td>{{ y|sinal }}</td></tr>
+        </tfoot>
+      </table>
+    </div>
+  </details>
+</section>
+
+<!-- ============ AÇÕES ============ -->
+<section class="contentor acoes-finais">
+  <a class="botao botao--secundario" href="{{ url_for('teste', nivel=nivel) }}">↺ Repetir este nível</a>
+  <a class="botao botao--secundario" href="{{ url_for('bussola') }}#niveis">Escolher outro nível</a>
+  {% if nivel < 3 %}
+  <a class="botao botao--primario" href="{{ url_for('teste', nivel=nivel + 1) }}">Avançar para o Nível {{ nivel + 1 }} <span aria-hidden="true">→</span></a>
+  {% endif %}
+</section>
+
+<p class="contentor aviso">
+  As correspondências com personalidades, países e regimes são aproximações pedagógicas baseadas em intervalos de
+  pontuação e não constituem um juízo sobre as tuas convicções.
+</p>
+{% endblock %}

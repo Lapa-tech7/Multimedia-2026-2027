@@ -1,0 +1,78 @@
+
+Prompt nº1
+
+Quero que cries o código completo de um site/aplicação web interativa de Bússola Política, utilizando Python no backend (ex: Flask ou FastAPI), HTML para estruturar a página e CSS personalizado para embelezar toda a interface (design moderno, responsivo, cartões para as perguntas e botões estilizados).
+
+A aplicação deve funcionar com base nas perguntas e tabelas de correspondência fornecidas abaixo e cumprir os seguintes requisitos:
+
+Ecrã Inicial (HTML/CSS):
+   - Uma página inicial limpa e apelativa com introdução à Bússola Política e 3 cartões de escolha para o utilizador selecionar o nível do teste:
+     - Nível 1: Base Essencial (10 perguntas: 5 económicas e 5 sociais).
+     - Nível 2: Expansão Intermédia (20 perguntas no total).
+     - Nível 3: Versão Completa (50 perguntas no total).
+Lógica de Perguntas e Pontuação (Python + HTML):
+   - Apresentar um formulário interativo estruturado em HTML onde cada pergunta tem 4 opções de resposta: "Discordo totalmente" (-2), "Discordo" (-1), "Concordo" (+1), "Concordo totalmente" (+2).
+   - No backend em Python, aplicar corretamente as regras de inversão de sinal nos eixos Económico (X) e Social (Y) conforme o enunciado das perguntas.
+   - Calcular a pontuação final X (Económico) e Y (Social) consoante o nível escolhido (Nível 1: -10 a +10; Nível 2: -20 a +20; Nível 3: -50 a +50).
+Ecrã de Resultados e Correspondências (HTML/CSS + Gráfico):
+   - Exibir um gráfico cartesiano 2D (pode ser gerado via Matplotlib/Plotly em Python ou desenhado via HTML/CSS/Canvas) mostrando os 4 quadrantes coloridos e o ponto exato do utilizador.
+   - Mostrar um cartão de resultado estilizado em CSS com a personalidade política correspondente (com base nas tabelas de correspondência por quadrantes/perspetivas).
+   - NO NÍVEL 3 (Versão Completa): Incluir um widget/secção destacada em HTML e CSS que apresente também qual o **país atual ou regime histórico** que mais se assemelha à respetiva ideologia ou pontuação obtida (ex: URSS, Cuba, Suécia, Suíça, Argentina de Milei, Hungria de Orbán, Portugal do Estado Novo, Alemanha Nazi, etc.).
+
+Por favor, fornece toda a estrutura de pastas e o código completo (o ficheiro principal em Python, os templates HTML e o ficheiro style.css), juntamente com os comandos para instalar as dependências e correr o servidor localmente.
+
+Prompt nº2
+
+
+Quero que cries o código completo de um site web interativo chamado "Politicamente Correto", utilizando Python no backend (Flask ou FastAPI), HTML para estruturar a página e CSS personalizado para embelezar toda a interface (design moderno, limpo, responsivo, com cartões interativos e uma paleta de cores equilibrada).
+
+CONTEXTO DO PROJETO:
+O site é um projeto desenvolvido por um aluno com o objetivo de ajudar as pessoas a conhecerem-se melhor, explorando as suas próprias ideias, valores e convicções políticas de forma clara, educativa e imparcial.
+
+ESTRUTURA DO SITE (Página Principal):
+A página principal deve ter o título "Politicamente Correto", a secção de introdução/contexto do aluno, e uma grelha contendo **dois widgets principais lado a lado**:
+
+WIDGET 1: Bússola Política  que já fizeste2. WIDGET 2: Quiz sobre Política (Em Breve / Placeholder)
+   - Um segundo widget alinhado esteticamente com o design do site, intitulado "Quiz sobre Política".
+   - Este widget é puramente demonstrativo por agora: apresenta uma breve descrição convidativa, um selo/etiqueta de "Em breve" e um botão informativo inativo (ex: "Disponível brevemente").
+
+Por favor, fornece toda a estrutura de pastas e o código completo (o ficheiro principal em Python com as perguntas e tabelas embutidas, os templates HTML e o ficheiro style.css), bem como as instruções para instalar as dependências (ex: pip install flask matplotlib pandas) e executar o site localmente.
+
+
+
+Prompt nº 3
+
+
+
+"Cria o código completo para um widget de quiz interativo de geopolítica, desenhado para ser integrado no site já existente. O projeto deve incluir:
+
+Backend em Python (utilizando Flask): Um servidor leve que sirva a aplicação, processe as respostas e faça a gestão da pontuação do quiz.
+Frontend (HTML5 e CSS3 moderno): Um design responsivo, elegante e limpo (com cartões modernos, botões interativos, transições suaves e barra de progresso) estruturado especificamente para funcionar como um widget incorporável dentro de uma página web que já tenho criada.
+Conteúdo: Utiliza um conjunto de perguntas de geopolítica de escolha múltipla com níveis de dificuldade progressivos (1 a 3). O utilizador deve conseguir selecionar a resposta, ver feedback visual imediato (correto/errado) e visualizar a pontuação final no fim.
+Por favor, fornece o código organizado por ficheiros (ex: app.py, index.html, style.css) e inclui instruções simples de como colocar o servidor Python a correr e como ligar este widget à minha página web atual."
+
+
+
+
+Prompt nº 4
+
+
+
+
+
+"Quero criar um jogo web de adivinhar líderes políticos (históricos e atuais) para integrar neste site. Preciso que escrevas todo o código necessário com as seguintes especificações:
+1. Lógica do Jogo / Backend (Python / Flask ou FastAPI):
+
+Cria um servidor simples em Python que gerencie a base de dados de líderes políticos (nome, país, pistas ordenadas por dificuldade, nível de dificuldade e imagem opcional).
+Cria endpoints para iniciar o jogo, validar as respostas do utilizador e avançar/dar novas pistas.
+Inclui um sistema de pontuação baseado no número de pistas usadas.
+Interface / Frontend (HTML e CSS):
+Desenvolve um design moderno, limpo e responsivo que combine com um site já existente (usa variáveis CSS para cores fáceis de adaptar e classes bem estruturadas).
+O layout deve incluir: uma caixa para mostrar as pistas progressivamente, um campo de texto para o utilizador escrever o palpite,botões de ação ('Pedir pista', 'Submeter resposta') e um painel de pontuação em tempo real.
+
+
+
+
+Prompt nº 5 
+
+atualiza o jogo unsando apenas python, html e css 
